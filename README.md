@@ -5,21 +5,21 @@
 
 # General Terminal Functions 
 
-## CompileCurrent 
+- CompileCurrent 
 
-## CheatSheet
+- CheatSheet
 
-## OpenTerm
+- OpenTerm
 
 # Lang / Framework Functions
 
-## LoadNode( position )
+- LoadNode( position )
 
-## ManagePy( position )
+- ManagePy( position )
 
-## LoadIRB ( position )
+- LoadIRB ( position )
 
-## RailsCommand ( Position, Project_rails, Command)
+- RailsCommand ( Position, Project_rails, Command)
 
 # Suggested keybindings
 
