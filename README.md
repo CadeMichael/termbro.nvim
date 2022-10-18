@@ -85,4 +85,5 @@ keymap('n', '<Space>cs', "<cmd> CheatSheet<CR>", { noremap = true, silent = true
 keymap('n', '<Space>cc', "<cmd> CompileCurrent<CR>", { noremap = true, silent = true })
 -- terminal
 keymap({ 'n', 'i' }, '<C-c><C-z>', '<cmd> OpenTerm<CR>', { noremap = true, silent = true })
+keymap('t', '<C-c><C-z>', '<C-\\><C-N> <cmd> OpenTerm<CR>]', { noremap = true, silent = true })
 ```
