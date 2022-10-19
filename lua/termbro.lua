@@ -203,6 +203,10 @@ function ManagePy(pos)
   print("Run Manage.py Command t")
   -- try to find manage.py
   local exe = vim.fn.findfile("manage.py", ".;")
+  -- if manage.py is in same dir
+  if exe == "manage.py" then
+    exe = "./" .. exe
+  end
   -- init user set variables
   local dir
   local command
