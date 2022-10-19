@@ -79,7 +79,7 @@ function IsTerm()
       -- term on screen
       if id then
         table.insert(onScreen, b)
-      -- term off screen
+        -- term off screen
       else
         table.insert(offScreen, b)
       end
@@ -200,19 +200,33 @@ vim.api.nvim_create_user_command("LoadNode",
 -- DJango --
 ------------
 function ManagePy(pos)
-  print("Run Manage.py Command")
-  -- get project root dir
-  local lsp_dir = vim.lsp.buf.list_workspace_folders()[1]
-  if lsp_dir == nil then
-    lsp_dir = ""
-  end
-  -- init variables
+  print("Run Manage.py Command t")
+  -- try to find manage.py
+  local exe = vim.fn.findfile("manage.py", ".;")
+  -- init user set variables
   local dir
   local command
-  -- allow user to modify root dir
-  dir = vim.fn.input("Directory=> ", lsp_dir, "file")
+  -- vim can't find manage.py
+  if exe == "" then
+    -- get project root dir
+    local lsp_dir = vim.lsp.buf.list_workspace_folders()[1]
+    if lsp_dir == nil then
+      lsp_dir = ""
+    end
+    -- let user modify dir
+    dir = vim.fn.input("Directory=> ", lsp_dir, "file")
+  else
+    -- show manage.py path
+    print("Manage.py=>  " .. exe)
+  end
+  -- get user command
   command = vim.fn.input("> ", "", "file")
-  command = dir .. "/manage.py " .. command
+  -- check for manage.py
+  if exe == "" then
+    exe = dir .. "/manage.py "
+  end
+  -- create command
+  command = exe .. " " .. command
   -- create new window
   vim.cmd(":wincmd n")
   vim.cmd(":wincmd " .. pos)
