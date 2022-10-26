@@ -50,23 +50,35 @@ vim.api.nvim_create_user_command("LoadIRB",
     LoadIRB(opts.args) -- positions
   end, { nargs = 1 })
 
+-- getting project root (without lsp)
 local function getRoot()
+  -- look for Gemfile as it is in root dir
   local gemfile = vim.fn.findfile('Gemfile', ';.')
+  -- create a table of dirs leading to 'Gemfile'
   local file_tab = vim.fn.split(gemfile, '/')
+  -- pop off 'Gemfile'
   table.remove(file_tab, #file_tab)
+  -- compose table into dir path
   local root = table.concat(file_tab, '/')
+  -- return root
   return root
 end
 
+-- get project specific rails
 local function runProjRails ()
+  -- set local vars
   local root = getRoot()
   local rails
+  -- if root dir is > 2 current dir != root dir
   if #root > 2 then
+    -- build path to rails exe
     root = '/' .. root
     rails = root .. '/bin/rails'
   else
+    -- build path to rails exe
     rails = 'bin/rails'
   end
+  -- return local vars
   return { rails, root }
 end
 

@@ -2,6 +2,9 @@
 
 - to get some of the functions/ functionality I missed from emacs into neovim and learn some lua 
 - main goal is better terminal interop
+- there are several 'supported' frameworks or languages with extended funcitonality
+  - the main goal with these is to make commands that would otherwise be executed in the terminal easier
+  - they aren't full featured enough to stand on their own legs (yet) so I've kept them as part of **termbro**
 
 # General Terminal Functions 
 
@@ -13,13 +16,17 @@
 
 # Lang / Framework Functions
 
-- LoadNode( position )
-
-- ManagePy( position )
-
-- LoadIRB ( position )
-
-- RailsCommand ( Position, Project_rails, Command)
+- **Node & Npm**
+  - interactively run `npm` commands from project root 
+	- lsp server required (for finding root dir)
+- **Ruby & Ruby on Rails**
+  - run the server
+  - open a console 
+  - basic function for sending any command you might want
+  - testing a file 
+	- current buffer must be the file to be tested
+- **Django**
+  - interactively run `manage.py` commands
 
 # Suggested keybindings
 
