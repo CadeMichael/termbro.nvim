@@ -1,3 +1,7 @@
+--------------------------
+-- Node & npm Functions --
+--------------------------
+
 -- load current file into node repl
 function LoadNode(pos)
   -- get buffer name

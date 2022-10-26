@@ -1,3 +1,8 @@
+----------------------
+-- Django Functions --
+----------------------
+
+-- Run command through manage.py
 function ManagePy(pos)
   print("Run Manage.py Command t")
   -- try to find manage.py

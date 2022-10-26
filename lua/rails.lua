@@ -1,8 +1,6 @@
--- create user command
-vim.api.nvim_create_user_command("LoadIRB",
-  function(opts)
-    LoadIRB(opts.args) -- positions
-  end, { nargs = 1 })
+----------------------------
+-- Ruby & Rails Functions --
+----------------------------
 
 -- open rails console in sandbox
 function RailsCommand(pos, proj_rails, cmd)
@@ -45,3 +43,9 @@ function LoadIRB(pos)
   local command = "irb -r" .. buf
   vim.fn.termopen(command)
 end
+
+-- create user command
+vim.api.nvim_create_user_command("LoadIRB",
+  function(opts)
+    LoadIRB(opts.args) -- positions
+  end, { nargs = 1 })
