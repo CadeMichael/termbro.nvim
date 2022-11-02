@@ -6,15 +6,17 @@
 local termbro = {}
 
 -- get modules
-local term = require('term')
-local node = require('node')
 local django = require('django')
+local node = require('node')
+local python = require('python')
 local rails = require('rails')
+local term = require('term')
 
-termbro.term = term
-termbro.node = node
 termbro.django = django
+termbro.node = node
+termbro.python = python
 termbro.rails = rails
+termbro.term = term
 
 -- return complete plugin
 return termbro

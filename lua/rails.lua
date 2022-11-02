@@ -40,7 +40,7 @@ function LoadIRB(pos)
   vim.cmd(":wincmd n")
   vim.cmd(":wincmd " .. pos)
   -- load file into terminal
-  local command = "irb -r" .. buf
+  local command = "irb -r " .. buf
   vim.fn.termopen(command)
 end
 
