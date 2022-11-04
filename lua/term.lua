@@ -3,15 +3,22 @@
 ------------------------
 
 -- Guess the intended command
+local last_command = '' -- set to blank on first load
+
+-- create a table of ftypes
+local ft_commands = {}
+ft_commands["go"] = "go build "
+ft_commands["javascript"] = "npm "
+ft_commands["lua"] = "lua "
+ft_commands["python"] = "python "
+ft_commands["rust"] = "cargo build "
+ft_commands["zig"] = "zig build-exe "
+
 local guess_command = function()
-  local ft_commands = {}
-  -- create a table of ftypes
-  ft_commands["go"] = "go build "
-  ft_commands["javascript"] = "npm "
-  ft_commands["lua"] = "lua "
-  ft_commands["python"] = "python "
-  ft_commands["rust"] = "cargo build "
-  ft_commands["zig"] = "zig build-exe "
+  -- check for LastCommand
+  if last_command ~= '' then
+    return last_command
+  end
   -- get filetype
   local ft = vim.bo.filetype
   local command = ""
@@ -19,7 +26,6 @@ local guess_command = function()
     -- use guess
     command = ft_commands[ft]
   end
-
   return command
 end
 
@@ -46,13 +52,18 @@ function Compile()
   -- get dir and cmd
   local dir = get_dir()
   local cmd = guess_command()
-  -- create blank buf
-  vim.cmd("wincmd n")
-  vim.cmd("wincmd J")
   -- allow user to change command
   local command = vim.fn.input("> ", cmd, "file")
-  -- cd to dir and run command
-  vim.fn.termopen("cd " .. dir .. " && " .. command)
+  -- make sure the command was entered
+  if command then
+    -- set LastCommand
+    last_command = command
+    -- create blank buf
+    vim.cmd("wincmd n")
+    vim.cmd("wincmd J")
+    -- cd to dir and run command
+    vim.fn.termopen("cd " .. dir .. " && " .. command)
+  end
 end
 
 -- make Compile() a user function
@@ -141,6 +152,7 @@ function CheatSheet()
   print("Ask Your Question...")
   -- get user question
   local question = vim.fn.input("?> ", "")
+  -- exit on no question
   if question == "" then return end
   -- split on \s
   local question_table = vim.fn.split(question)
