@@ -65,7 +65,7 @@ local function getRoot()
 end
 
 -- get project specific rails
-local function runProjRails ()
+local function runProjRails()
   -- set local vars
   local root = getRoot()
   local rails
@@ -82,6 +82,63 @@ local function runProjRails ()
   return { rails, root }
 end
 
+-- helper function to iterate through dirs of the cur file
+-- and check if there is a 'test/' dir in its path
+local function splitFile(file, dir)
+  -- split input file
+  local file_tab = vim.fn.split(file, '/')
+  -- keep track of deleted dirs to prevent delete nil loop
+  local cnt = #file_tab
+  -- loop through dirs removing until you hit 'test'
+  while (file_tab[1] ~= dir and cnt ~= 0) do
+    cnt = cnt - 1
+    table.remove(file_tab, 1)
+  end
+  -- if file_tab is <= 1 then it isn't in 'test' dir
+  if #file_tab <= 1 then
+    -- bad file value
+    return nil
+  end
+  -- current file is in 'test/' compose and return
+  return table.concat(file_tab, "/")
+end
+
+local function markFailed(command, regex)
+  local b = vim.api.nvim_get_current_buf()
+  local ns = vim.api.nvim_create_namespace('test')
+  vim.api.nvim_buf_clear_namespace(b, ns, 0, -1)
+  local handle = io.popen(command)
+  local result
+  local lines
+  local output
+  local message = '\n==All Tests Passed=='
+  if handle then
+    output = handle:read("*a")
+    -- make sure command runs
+    local ran = ''
+    ran = string.match(output, 'Running %d tests')
+    if ran == nil then
+      message = "\n==Rails Test Command Failed=="
+    end
+    handle:close()
+    result = string.gmatch(output, regex)
+    lines = {}
+    for v in result do
+      table.insert(lines, string.match(v, '[0-9]+'))
+    end
+  end
+  if #lines > 0 then
+    vim.api.nvim_notify(output, vim.log.levels.INFO, {})
+    for _, v in ipairs(lines) do
+      vim.api.nvim_buf_set_extmark(b, ns, tonumber(v)-1, 0, {
+        virt_text = { { '✗' } }
+      })
+    end
+  else
+    vim.api.nvim_notify(message, vim.log.levels.WARN, {})
+  end
+end
+
 function RailsTestFile()
   -- get variables from helper func
   local vars = runProjRails()
@@ -92,26 +149,6 @@ function RailsTestFile()
   print("Project root => " .. root .. "\n")
   -- get current file (should be a test file)
   local cur_file = vim.api.nvim_buf_get_name(0)
-  -- helper function to iterate through dirs of the cur file 
-  -- and check if there is a 'test/' dir in its path
-  local function splitFile(file, dir)
-    -- split input file
-    local file_tab = vim.fn.split(file, '/')
-    -- keep track of deleted dirs to prevent delete nil loop
-    local cnt = #file_tab
-    -- loop through dirs removing until you hit 'test'
-    while (file_tab[1] ~= dir and cnt ~= 0) do
-      cnt = cnt - 1
-      table.remove(file_tab, 1)
-    end
-    -- if file_tab is <= 1 then it isn't in 'test' dir
-    if #file_tab <= 1 then
-      -- bad file value
-      return nil
-    end
-    -- current file is in 'test/' compose and return
-    return table.concat(file_tab, "/")
-  end
   -- get relative (to root dir) path of test file
   local test_file = splitFile(cur_file, "test")
   -- see if file is in 'test/' dir
@@ -121,20 +158,18 @@ function RailsTestFile()
     return
   end
   -- compose command
-  local command = rails .. " test " .. test_file
-  -- create new window
-  vim.cmd(":wincmd n")
-  vim.cmd(":wincmd J")
-  -- rails exe is not in cur dir
+  local command = rails .. " test -v " .. test_file
+  local regex = '.rb:[0-9]+'
+  -- check rails being used
   if #rails ~= 9 then
     -- set dir before command
     command = 'cd ' .. root .. ' && ' .. command
     print(test_file)
-    vim.fn.termopen('cd ' .. root .. ' && ' .. command)
-  -- rails exe is in current dir
+    markFailed(command, regex)
+    -- rails exe is in current dir
   else
     print(test_file)
-    vim.fn.termopen(command)
+    markFailed(command, regex)
   end
 end
 
