@@ -103,38 +103,52 @@ local function splitFile(file, dir)
   return table.concat(file_tab, "/")
 end
 
+-- Helper function to mark where tests break
 local function markFailed(command, regex)
+  -- get buffer & namespace
   local b = vim.api.nvim_get_current_buf()
   local ns = vim.api.nvim_create_namespace('test')
+  -- clear any existing marks
   vim.api.nvim_buf_clear_namespace(b, ns, 0, -1)
+  -- run command with blocking, synchronous lua io 
   local handle = io.popen(command)
   local result
   local lines
   local output
+  -- create default message
   local message = '\n==All Tests Passed=='
+  -- check for null handle
   if handle then
-    output = handle:read("*a")
-    -- make sure command runs
     local ran = ''
+    -- read from shell output
+    output = handle:read("*a")
+    -- check proper test command ran
     ran = string.match(output, 'Running %d tests')
+    -- make sure command runs
     if ran == nil then
       message = "\n==Rails Test Command Failed=="
     end
+    -- close handler
     handle:close()
+    -- match for line numbers and populate table
     result = string.gmatch(output, regex)
     lines = {}
     for v in result do
       table.insert(lines, string.match(v, '[0-9]+'))
     end
   end
+  -- if there are line numbers they represent failed tests
   if #lines > 0 then
+    -- show user info on why tests failed
     vim.api.nvim_notify(output, vim.log.levels.INFO, {})
+    -- add marks to where tests failed
     for _, v in ipairs(lines) do
       vim.api.nvim_buf_set_extmark(b, ns, tonumber(v)-1, 0, {
         virt_text = { { '✗' } }
       })
     end
   else
+    -- tests either passed or command failed
     vim.api.nvim_notify(message, vim.log.levels.WARN, {})
   end
 end
