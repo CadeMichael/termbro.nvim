@@ -60,7 +60,7 @@ function ZigTest()
 end
 
 -- create user command
-vim.api.nvim_create_user_command("RailsTestFile",
+vim.api.nvim_create_user_command("ZigTest",
   function()
     ZigTest()
   end, {})
