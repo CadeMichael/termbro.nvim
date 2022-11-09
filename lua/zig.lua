@@ -44,35 +44,34 @@ function ZigTest()
   -- get buffer information
   local b = vim.api.nvim_get_current_buf()
   local ns = vim.api.nvim_create_namespace('test')
+  local function handleData(data)
+    local msg = {}
+    for _, v in ipairs(data) do
+      table.insert(msg, v)
+    end
+    -- get the output as a string and set vir text
+    local output = handleOutput(msg, regex, b, ns)
+    -- if there is output message user
+    if #output > 1 then
+      vim.api.nvim_notify(output, vim.log.levels.DEBUG, {})
+    end
+  end
   -- table to store outputs
-  local msg = {}
   vim.api.nvim_buf_clear_namespace(b, ns, 0, -1)
   -- wait for job to finish so msg can populate
-  vim.fn.jobwait({
-    vim.fn.jobstart(vim.fn.split(command), {
-      -- allows proper newlines
-      stderr_buffered = true,
-      stdout_buffered = true,
-      cwd = vim.fn.getcwd(),
-      -- handle err / out
-      on_stderr = function(_, data)
-        for _, v in ipairs(data) do
-          table.insert(msg, v)
-        end
-      end,
-      on_stdout = function(_, data)
-        for _, v in ipairs(data) do
-          table.insert(msg, v)
-        end
-      end,
-    })
+  vim.fn.jobstart(vim.fn.split(command), {
+    -- allows proper newlines
+    stderr_buffered = true,
+    stdout_buffered = true,
+    cwd = vim.fn.getcwd(),
+    -- handle err / out
+    on_stderr = function(_, data)
+      handleData(data)
+    end,
+    on_stdout = function(_, data)
+      handleData(data)
+    end,
   })
-  -- get the output as a string and set vir text
-  local output = handleOutput(msg, regex, b, ns)
-  -- if there is output message user
-  if #output > 1 then
-    vim.api.nvim_notify(output, vim.log.levels.DEBUG, {})
-  end
 end
 
 -- create user command
