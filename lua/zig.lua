@@ -3,8 +3,10 @@
 ------------------
 
 local handleOutput = function(data, regex, b, ns)
+  -- check input
   if data then
     local msg = ''
+    -- compose message from data
     for _, v in ipairs(data) do
       msg = msg .. v .. "\n"
     end
@@ -16,10 +18,10 @@ local handleOutput = function(data, regex, b, ns)
     end
     if #lines > 0 then
       -- add marks to where tests failed
-      for i, v in ipairs(lines) do
+      for _, v in ipairs(lines) do
+        -- make sure line exists in file
         local max = vim.api.nvim_buf_line_count(0)
-        -- odd numbers represent zig stdlib files
-        if tonumber(v) <= max and i % 2 == 0 then
+        if tonumber(v) <= max then
           vim.api.nvim_buf_set_extmark(b, ns, tonumber(v) - 1, -1, {
             virt_text = { { ' ✗', 'ErrorMsg' } },
             -- overlay prevents conflict with diagnostic messages
@@ -38,25 +40,39 @@ function ZigTest()
   print("Testing " .. file)
   -- compose command
   local command = "zig test " .. file
-  local regex = '.zig:[0-9]+'
+  local regex = file .. ':[0-9]+'
+  -- get buffer information
   local b = vim.api.nvim_get_current_buf()
   local ns = vim.api.nvim_create_namespace('test')
+  -- table to store outputs
+  local msg = {}
   vim.api.nvim_buf_clear_namespace(b, ns, 0, -1)
-  vim.fn.jobstart(vim.fn.split(command), {
-    cwd = vim.fn.getcwd(),
-    on_stderr = function(_, data)
-      local msg = handleOutput(data, regex, b, ns)
-      if #msg > 1 then
-        vim.api.nvim_notify(msg, vim.log.levels.INFO, {})
-      end
-    end,
-    on_stdout = function(_, data)
-      local msg = handleOutput(data, regex, b, ns)
-      if #msg > 1 then
-        vim.api.nvim_notify(msg, vim.log.levels.INFO, {})
-      end
-    end,
+  -- wait for job to finish so msg can populate
+  vim.fn.jobwait({
+    vim.fn.jobstart(vim.fn.split(command), {
+      -- allows proper newlines
+      stderr_buffered = true,
+      stdout_buffered = true,
+      cwd = vim.fn.getcwd(),
+      -- handle err / out
+      on_stderr = function(_, data)
+        for _, v in ipairs(data) do
+          table.insert(msg, v)
+        end
+      end,
+      on_stdout = function(_, data)
+        for _, v in ipairs(data) do
+          table.insert(msg, v)
+        end
+      end,
+    })
   })
+  -- get the output as a string and set vir text
+  local output = handleOutput(msg, regex, b, ns)
+  -- if there is output message user
+  if #output > 1 then
+    vim.api.nvim_notify(output, vim.log.levels.DEBUG, {})
+  end
 end
 
 -- create user command
