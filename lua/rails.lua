@@ -107,7 +107,7 @@ function RailsTestFile()
   -- compose command
   local command = rails .. " test -v " .. test_file
   local regex = '.rb:[0-9]+'
-  local success = 'Running %d tests'
+  local success = 'Running'
   -- check rails being used
   if #rails ~= 9 then
     -- set dir before command

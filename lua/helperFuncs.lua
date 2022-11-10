@@ -33,32 +33,41 @@ helpers.markFailed = function(command, success, regex)
   -- clear any existing marks
   vim.api.nvim_buf_clear_namespace(b, ns, 0, -1)
   -- run command with blocking, synchronous lua io
-  local handle = io.popen(command)
   local result
-  local lines
-  local output
+  local lines = {}
+  local output = ''
   -- create default message
   local message = '\n==All Tests Passed=='
   -- check for null handle
-  if handle then
-    local ran = ''
-    -- read from shell output
-    output = handle:read("*a")
-    -- close handler
-    handle:close()
-    -- check proper test command ran
-    ran = string.match(output, success)
-    -- make sure command runs
-    if ran == nil then
-      message = "\n==Test Command Failed=="
-    end
+  vim.fn.jobwait({
+    vim.fn.jobstart(command, {
+      stderr_buffered = true,
+      stdout_buffered = true,
+      cwd = vim.fn.getcwd(),
+      on_stderr = function(_, data)
+        for _, v in ipairs(data) do
+          output = output .. v .. "\n"
+        end
+      end,
+      on_stdout = function(_, data)
+        for _, v in ipairs(data) do
+          output = output .. v .. "\n"
+        end
+      end,
+    })
+  })
+  -- check proper test command ran
+  local ran = string.match(output, success)
+  -- make sure command runs
+  if ran ~= nil and #ran ~= 0 then
     -- match for line numbers and populate table
     result = string.gmatch(output, regex)
-    lines = {}
     for v in result do
       -- get just the line numbers
       table.insert(lines, string.match(v, '[0-9]+'))
     end
+  else
+    message = "\n==Test Command Failed=="
   end
   -- if there are line numbers they represent failed tests
   if #lines > 0 then
