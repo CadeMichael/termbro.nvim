@@ -136,11 +136,16 @@ local function markFailed(command, root, success, regex)
     vim.api.nvim_notify(output, vim.log.levels.INFO, {})
     -- add marks to where tests failed
     for _, v in ipairs(lines) do
-      vim.api.nvim_buf_set_extmark(b, ns, tonumber(v) - 1, -1, {
-        virt_text = { { ' ✗', 'ErrorMsg' } },
-        -- overlay prevents conflict with diagnostic messages
-        virt_text_pos = 'overlay',
-      })
+      vim.api.nvim_buf_set_extmark(
+        b,
+        ns,
+        tonumber(v) - 1,
+        -1,
+        {
+          virt_text = { { ' ✗', 'ErrorMsg' } },
+          -- overlay prevents conflict with diagnostic messages
+          virt_text_pos = 'overlay',
+        })
     end
   else
     -- tests either passed or command failed
